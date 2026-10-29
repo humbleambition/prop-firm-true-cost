@@ -86,10 +86,11 @@ footer{color:var(--mut);font-size:11px;padding:10px 16px 100px}
   <label>Search firm / plan<input type="text" id="q" placeholder="e.g. Tradeify"></label>
   <label>Account size<select id="size"></select></label>
   <label>Billing<select id="bill"><option value="">Any</option><option value="one">One-time</option><option value="month">Monthly</option></select></label>
+  <label>Drawdown type<select id="dd"><option value="">Any</option><option>EOD trailing</option><option>Intraday trailing</option><option>Trailing (other)</option><option>Static</option><option>Not stated</option></select></label>
   <label>Platform<select id="plat"></select></label>
   <label>Max cost to funded ($)<input type="number" id="max" placeholder="any"></label>
   <label>Your country<select id="ctry"><option value="">Choose…</option></select></label>
-  <label class="chk"><input type="checkbox" id="chile"> Allowed in my country only</label>
+  <label class="chk"><input type="checkbox" id="chile"> Hide firms that exclude my country</label>
   <label class="chk"><input type="checkbox" id="priced" checked> Hide rows without a price</label>
   <label class="chk"><input type="checkbox" id="mine"> My shortlist only</label>
 </div>
@@ -113,6 +114,22 @@ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 let CTRY={list:[],firms:{}};
 const cst=f=>{const c=$('ctry').value;if(!c)return '';return ((CTRY.firms[f]||{})[c])||''};
 const chile=f=>{if(!$('ctry').value)return '<span class="small">pick country</span>';const v=cst(f);return v==='y'?'<span class="tag y">allowed</span>':v==='n'?'<span class="tag n">restricted</span>':'<span class="tag u">not stated</span>'};
+const BILL=b=>{b=String(b||'').toLowerCase();return /month|1er mes/.test(b)?'Monthly':/one|free/.test(b)?'One-time':'Not stated'};
+function ddCats(t){t=String(t||'').toLowerCase().replace(/\[.*?\]/g,'');const out=new Set();
+ if(!t.trim()||/^not stated/.test(t)){out.add('Not stated');return out}
+ t.split(/;|\bor\b|\//).forEach(c=>{c=c.trim();if(!c)return;
+  if(/intraday|unreali[sz]ed|peak equity/.test(c))out.add('Intraday trailing');
+  else if(/\beod\b|end of day|fin del d|end-of-day/.test(c))out.add('EOD trailing');
+  else if(/static|estático|estatico|fixed/.test(c))out.add('Static');
+  else if(/trail|dynamic|high-water|smart|lock|relative/.test(c))out.add('Trailing (other)')});
+ if(!out.size)out.add('Not stated');return out}
+const URLRE=/https?:\/\/[^\s)"';,]+/;
+function excl(x){const n=x.restricted_countries_note||'';const m=n.match(URLRE);let s='';
+ if($('ctry').value){const v=cst(x.firm);s+=v==='y'?'<span class="tag y">allowed</span> ':v==='n'?'<span class="tag n">excluded</span> ':''}
+ if(m)s+=`<a class="l-src" href="${esc(m[0])}" target="_blank" rel="noopener" title="${esc(n)}">list</a>`;
+ else if(!n||/^not stated/i.test(n))s+='<span class="small">none published</span>';
+ else{const t=n.replace(/^(Chile|[A-Z][a-z]+) (is )?not (on|in) (the )?(restricted )?list[^:;]*[:;]?\s*/i,'').replace(/^earlier read[^:]*:\s*/i,'');s+=`<span class="small" title="${esc(n)}">${esc(t.length>70?t.slice(0,70)+'…':t)}</span>`}
+ return s}
 const LC={Buy:'l-buy',Discord:'l-dc',Source:'l-src'};
 const link=(u,t)=>u&&/^https?:/.test(u)?`<a class="${LC[t]||(/^Source/.test(t)?'l-src':'')}" href="${esc(u)}" target="_blank" rel="noopener">${t}</a>`:'';
 const WS={'ok':['w-ok','code live'],'extra code':['w-ok','code live +more'],'new code':['w-new','new code on site'],'no code':['w-un','no code'],'code not seen':['w-gone','code not seen'],'unreadable':['w-un','not checked']};
@@ -120,14 +137,15 @@ function fname(f,u){const a=AFF[f];const h=a?a.url:u;const n=esc(f);if(!h)return
 function watch(f){const w=FIRMS[f];if(!w)return '';const [c,l]=WS[w.status]||['w-un',w.status];const t=`Codes checked ${w.checked}. Codes on site: ${(w.codes||[]).join(', ')||'none found'}. % off seen: ${(w.pcts||[]).join(', ')||'none'}`;return ` <span class="tag ${c}" title="${esc(t)}">${l}</span>`}
 const COLS=[
  ['★','fav'],['Firm','firm'],['Plan','plan'],['Size','size_num'],['Billing','billing'],['Price','best_price_usd'],['Activation','activation_fee_usd'],['Cost to funded','cost_to_funded_usd'],
- ['Reset','reset_fee_usd'],['Max DD','max_drawdown_usd'],['DD type','drawdown_type'],['Daily loss','daily_loss_usd'],['Target','profit_target_usd'],['Consistency','consistency_rule'],['Split','profit_split'],['Platforms','platforms'],['Country','ctry'],['Links','buy_url'],['Prices verified','checked_date']];
+ ['Reset','reset_fee_usd'],['Max DD','max_drawdown_usd'],['DD type','drawdown_type'],['Daily loss','daily_loss_usd'],['Target','profit_target_usd'],['Consistency','consistency_rule'],['Split','profit_split'],['Platforms','platforms'],['Excluded countries','restricted_countries_note'],['Links','buy_url'],['Prices verified','checked_date']];
 function rowsFor(){
-  const q=$('q').value.toLowerCase().trim(),sz=$('size').value,b=$('bill').value,p=$('plat').value,mx=num($('max').value);
+  const q=$('q').value.toLowerCase().trim(),sz=$('size').value,b=$('bill').value,dd=$('dd').value,p=$('plat').value,mx=num($('max').value);
   let r=DATA.filter(x=>x.category===cat);
   if(q)r=r.filter(x=>(x.firm+' '+x.plan).toLowerCase().includes(q));
   if(sz)r=r.filter(x=>String(x.size_num)===sz);
-  if(b==='one')r=r.filter(x=>/one/i.test(x.billing));
-  if(b==='month')r=r.filter(x=>/month/i.test(x.billing));
+  if(b==='one')r=r.filter(x=>BILL(x.billing)==='One-time');
+  if(b==='month')r=r.filter(x=>BILL(x.billing)==='Monthly');
+  if(dd)r=r.filter(x=>ddCats(x.drawdown_type).has(dd));
   if(p)r=r.filter(x=>(x.platforms||'').toLowerCase().includes(p.toLowerCase()));
   if(mx!=null)r=r.filter(x=>x.cost_to_funded_usd!=null&&x.cost_to_funded_usd<=mx);
   if($('chile').checked&&$('ctry').value)r=r.filter(x=>cst(x.firm)==='y');
@@ -153,10 +171,10 @@ function render(){
   $('t').querySelector('tbody').innerHTML=r.slice(0,600).map(x=>`<tr>
    <td><input type="checkbox" data-id="${x.id}" ${sel.has(x.id)?'checked':''} title="Add to compare"></td>
    <td><span data-fav="${esc(x.firm)}" style="cursor:pointer;color:${fav.has(x.firm)?'#f0c46a':'#45515e'}">★</span></td>
-   <td>${fname(x.firm,x.buy_url)}${watch(x.firm)}</td><td class="small">${esc(x.plan)}</td><td class="num">${x.size_num?Number(x.size_num).toLocaleString():''}</td><td class="small">${esc(x.billing)}</td>
+   <td>${fname(x.firm,x.buy_url)}${watch(x.firm)}</td><td class="small">${esc(x.plan)}</td><td class="num">${x.size_num?Number(x.size_num).toLocaleString():''}</td><td class="small" title="${esc(x.billing)}">${BILL(x.billing)}</td>
    <td class="num">${priceCell(x)}</td><td class="num">${money(num(x.activation_fee_usd))||esc(x.activation_fee_usd)}</td><td class="num cost">${money(x.cost_to_funded_usd)}</td>
    <td class="small">${esc(x.reset_fee_usd)}</td><td class="num">${esc(x.max_drawdown_usd)}</td><td class="small">${esc(x.drawdown_type)}</td><td class="num">${esc(x.daily_loss_usd)}</td><td class="num">${esc(x.profit_target_usd)}</td>
-   <td class="small">${esc(x.consistency_rule)}</td><td class="small">${esc(x.profit_split)}</td><td class="small">${esc(x.platforms).replace(/;/g,', ')}</td><td>${chile(x.firm)}</td>
+   <td class="small">${esc(x.consistency_rule)}</td><td class="small">${esc(x.profit_split)}</td><td class="small">${esc(x.platforms).replace(/;/g,', ')}</td><td>${excl(x)}</td>
    <td class="lk">${link((AFF[x.firm]||{}).url||x.buy_url,'Buy')}${link(x.discord_url,'Discord')}</td><td class="small">${esc(x.checked_date)}</td></tr>`).join('');
   $('count').textContent=`${r.length} plans from ${new Set(r.map(x=>x.firm)).size} firms`+(r.length>600?' (showing first 600, narrow the filters)':'');
   $('tray').classList.toggle('on',sel.size>0);$('trayN').textContent=`${sel.size} selected`;
@@ -186,7 +204,7 @@ function renderChg(){const el=$('chg');if(!CHG.length){el.innerHTML='<summary>Co
 function save(){localStorage.setItem('sel',JSON.stringify([...sel]));localStorage.setItem('fav',JSON.stringify([...fav]))}
 $('tabs').innerHTML=CATS.map(([k,l])=>`<button class="tab ${k===cat?'on':''}" data-c="${k}">${l}</button>`).join('');
 $('tabs').onclick=e=>{const c=e.target.dataset.c;if(!c)return;cat=c;document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.c===c));fillFilters();render()};
-['q','size','bill','plat','max','chile','priced','mine'].forEach(id=>$(id).addEventListener('input',render));
+['q','size','bill','dd','plat','max','chile','priced','mine'].forEach(id=>$(id).addEventListener('input',render));
 $('ctry').addEventListener('input',()=>{localStorage.setItem('ctry',$('ctry').value);render()});
 $('t').onclick=e=>{const th=e.target.closest('th');if(th&&th.dataset.k&&th.dataset.k!=='fav'){const k=th.dataset.k;sortD=k===sortK?-sortD:1;sortK=k;render();return}
   if(e.target.dataset.id){const i=+e.target.dataset.id;e.target.checked?sel.add(i):sel.delete(i);save();render();return}
