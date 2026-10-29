@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prop Firm True Cost</title>
+<style>
+:root{--bg:#000;--panel:#0b0b0f;--line:#1f1f29;--text:#f4f4f8;--mut:#9a9aae;--acc:#3ddc84;--blue:#4fc3ff;
+--rb:linear-gradient(90deg,#ff3b3b,#ff9f1c,#ffe53b,#3ddc84,#2ec5ff,#7b5cff,#ff4fd8)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body::before{content:"";display:block;height:4px;background:var(--rb);background-size:200% 100%;animation:flow 8s linear infinite}
+@keyframes flow{to{background-position:200% 0}}
+header{padding:18px 16px 12px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;justify-content:space-between}
+h1{font-size:26px;margin:0;font-weight:800;letter-spacing:-.5px;background:var(--rb);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:flow 10s linear infinite}
+.sub{color:var(--mut);font-size:12px}
+.stamps{display:flex;gap:8px;flex-wrap:wrap}
+.stamp{border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:12px;color:var(--mut);background:#07070b}
+.stamp b{display:block;color:#fff;font-size:13px}
+.stamp:nth-child(1){border-color:#2ec5ff55}.stamp:nth-child(2){border-color:#ff9f1c55}
+.tabs{display:flex;gap:8px;padding:6px 16px 10px;flex-wrap:wrap}
+.tab{background:#111;border:1px solid var(--line);color:var(--text);padding:8px 16px;border-radius:999px;cursor:pointer;font-weight:600}
+.tab:nth-child(1).on{background:linear-gradient(90deg,#ff3b3b,#ff9f1c)}
+.tab:nth-child(2).on{background:linear-gradient(90deg,#3ddc84,#2ec5ff)}
+.tab:nth-child(3).on{background:linear-gradient(90deg,#7b5cff,#ff4fd8)}
+.tab.on{color:#000;border-color:transparent}
+.filters{display:flex;flex-wrap:wrap;gap:10px;padding:12px 16px;background:rgba(11,11,15,.92);backdrop-filter:blur(6px);border-top:1px solid var(--line);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.filters label{display:flex;flex-direction:column;font-size:11px;color:var(--mut);gap:3px}
+select,input[type=text],input[type=number]{background:#000;color:var(--text);border:1px solid #2a2a38;border-radius:8px;padding:7px 9px;font-size:13px;min-width:110px}
+select:focus,input:focus{outline:none;border-color:#7b5cff;box-shadow:0 0 0 2px rgba(123,92,255,.35)}
+.chk{flex-direction:row!important;align-items:center;gap:6px!important;font-size:13px!important;color:var(--text)!important;margin-top:16px}
+input[type=checkbox]{accent-color:#ff4fd8}
+button{background:var(--rb);color:#000;border:0;border-radius:999px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer}
+button.ghost{background:transparent;border:1px solid #2a2a38;color:var(--text);font-weight:500}
+.wrap{overflow-x:auto;padding:0 16px 90px}
+table{border-collapse:collapse;width:100%;min-width:1100px;margin-top:10px}
+th,td{padding:8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;white-space:nowrap}
+th{color:var(--mut);font-weight:600;font-size:12px;cursor:pointer;user-select:none;position:sticky;top:0;background:#000;border-bottom:2px solid transparent;border-image:var(--rb) 1}
+th.s{color:#fff} th.s::after{content:" ▲"} th.s.d::after{content:" ▼"}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+td.cost{font-weight:800;font-size:15px;color:#3ddc84;text-shadow:0 0 12px rgba(61,220,132,.35)}
+tbody tr:nth-child(7n+1) td:nth-child(3){border-left:3px solid #ff3b3b}
+tbody tr:nth-child(7n+2) td:nth-child(3){border-left:3px solid #ff9f1c}
+tbody tr:nth-child(7n+3) td:nth-child(3){border-left:3px solid #ffe53b}
+tbody tr:nth-child(7n+4) td:nth-child(3){border-left:3px solid #3ddc84}
+tbody tr:nth-child(7n+5) td:nth-child(3){border-left:3px solid #2ec5ff}
+tbody tr:nth-child(7n+6) td:nth-child(3){border-left:3px solid #7b5cff}
+tbody tr:nth-child(7n) td:nth-child(3){border-left:3px solid #ff4fd8}
+tr:hover td{background:#0e0e16}
+.tag{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600}
+.y{background:#0d2e1d;color:#6ff0a8}.n{background:#3a0f12;color:#ff8a8a}.u{background:#1a1a24;color:var(--mut)}
+.w-ok{background:#0d2e1d;color:#6ff0a8}.w-new{background:#2e2408;color:#ffd166}.w-gone{background:#3a0f12;color:#ff8a8a}.w-un{background:#1a1a24;color:var(--mut)}
+.code{font-family:ui-monospace,Menlo,monospace;background:#1d1405;color:#ffcf5a;border:1px solid #4a3410;padding:1px 6px;border-radius:5px;font-size:12px}
+.est{color:#ffd166;font-size:12px}
+.strike{color:#6b6b80;text-decoration:line-through;font-size:12px}
+a{color:#4fc3ff;text-decoration:none} a:hover{color:#ff4fd8}
+.small{font-size:12px;color:var(--mut);max-width:260px;white-space:normal}
+.count{color:var(--mut);font-size:12px;padding:10px 16px 0}
+.changes{margin:10px 16px 0;border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:10px 14px}
+.changes summary{cursor:pointer;font-weight:700}
+.changes li{margin:4px 0;font-size:13px}
+.tray{position:fixed;left:0;right:0;bottom:0;background:rgba(11,11,15,.96);border-top:2px solid transparent;border-image:var(--rb) 1;padding:10px 16px;display:none;align-items:center;gap:10px;z-index:10}
+.tray.on{display:flex}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;z-index:20;overflow:auto}
+.modal.on{display:block}
+.box{background:#05050a;margin:20px auto;max-width:1200px;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 0 40px rgba(123,92,255,.25)}
+.cmp{overflow-x:auto}
+.cmp table{min-width:0}
+.cmp td,.cmp th{white-space:normal;min-width:150px}
+.cmp th:first-child,.cmp td:first-child{position:sticky;left:0;background:#0b0b0f;min-width:130px;color:var(--mut)}
+.best{color:#3ddc84;font-weight:800}
+footer{color:var(--mut);font-size:11px;padding:10px 16px 100px}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>Prop Firm True Cost</h1><div class="sub">Ranked by what you actually pay to get funded, not by % off</div></div>
+  <div class="stamps" id="upd"></div>
+</header>
+<div class="tabs" id="tabs"></div>
+<div class="filters">
+  <label>Search firm / plan<input type="text" id="q" placeholder="e.g. Tradeify"></label>
+  <label>Account size<select id="size"></select></label>
+  <label>Billing<select id="bill"><option value="">Any</option><option value="one">One-time</option><option value="month">Monthly</option></select></label>
+  <label>Platform<select id="plat"></select></label>
+  <label>Max cost to funded ($)<input type="number" id="max" placeholder="any"></label>
+  <label class="chk"><input type="checkbox" id="chile"> Chile allowed only</label>
+  <label class="chk"><input type="checkbox" id="priced" checked> Hide rows without a price</label>
+  <label class="chk"><input type="checkbox" id="mine"> My shortlist only</label>
+</div>
+<details class="changes" id="chg"></details>
+<div class="count" id="count"></div>
+<div class="wrap"><table id="t"><thead></thead><tbody></tbody></table></div>
+<footer><b>Independent comparison, not financial advice. Prices, codes and rules change often; always confirm on the firm's own site before buying.</b> Cost to funded = best price found (code price if a code is live, else list) + activation fee. Excludes resets, extra months and data fees, so check the full row before buying. Some code prices are computed from the advertised % off; see Notes. Seed rows marked FROM SEED come from TradingLookup open data (<a href="https://tradinglookup.com/data" target="_blank" rel="noopener">tradinglookup.com/data</a>, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>). Badges: "code live" means the stored code still appears on the firm's site today; "code not seen" means it was not found (it may have expired, or the site hides codes from simple page reads); hover a badge for every code seen. "est." prices are list price minus a newly seen % off and are not checkout totals. Chile status comes from each firm's restricted-country list; "not stated" means no list was found.</footer>
+
+<div class="tray" id="tray"><span id="trayN"></span><button id="cmpBtn">Compare side by side</button><button class="ghost" id="clr">Clear</button></div>
+<div class="modal" id="modal"><div class="box"><div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0;font-size:16px">Side by side</h2><button class="ghost" id="close">Close</button></div><div class="cmp" id="cmp"></div></div></div>
+
+<script>
+const CATS=[['futures','Futures'],['forex/CFD','Forex / CFD'],['stocks','Stocks']];
+let DATA=[],FIRMS={},CHG=[],cat='futures',sortK='cost_to_funded_usd',sortD=1;
+const sel=new Set(JSON.parse(localStorage.getItem('sel')||'[]'));
+const fav=new Set(JSON.parse(localStorage.getItem('fav')||'[]'));
+const $=id=>document.getElementById(id);
+const money=v=>{if(v==null||v==='')return '';const n=Number(v);return '$'+n.toLocaleString('en-US',{minimumFractionDigits:Number.isInteger(n)?0:2,maximumFractionDigits:2})};
+const num=v=>{const n=parseFloat(String(v).replace(/[$,]/g,''));return isNaN(n)?null:n};
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const chile=v=>{v=(v||'').toLowerCase();return v.startsWith('yes')?'<span class="tag y">yes</span>':v.startsWith('no')?'<span class="tag n">no</span>':'<span class="tag u">not stated</span>'};
+const link=(u,t)=>u&&/^https?:/.test(u)?`<a href="${esc(u)}" target="_blank" rel="noopener">${t}</a>`:'';
+const WS={'ok':['w-ok','code live'],'extra code':['w-ok','code live +more'],'new code':['w-new','new code on site'],'no code':['w-un','no code'],'code not seen':['w-gone','code not seen'],'unreadable':['w-un','not checked']};
+function watch(f){const w=FIRMS[f];if(!w)return '';const [c,l]=WS[w.status]||['w-un',w.status];const t=`Codes checked ${w.checked}. Codes on site: ${(w.codes||[]).join(', ')||'none found'}. % off seen: ${(w.pcts||[]).join(', ')||'none'}`;return ` <span class="tag ${c}" title="${esc(t)}">${l}</span>`}
+const COLS=[
+ ['★','fav'],['Firm','firm'],['Plan','plan'],['Size','size_num'],['Billing','billing'],['Price','best_price_usd'],['Activation','activation_fee_usd'],['Cost to funded','cost_to_funded_usd'],
+ ['Reset','reset_fee_usd'],['Max DD','max_drawdown_usd'],['DD type','drawdown_type'],['Daily loss','daily_loss_usd'],['Target','profit_target_usd'],['Consistency','consistency_rule'],['Split','profit_split'],['Platforms','platforms'],['Chile','chile_allowed'],['Links','buy_url'],['Prices verified','checked_date']];
+function rowsFor(){
+  const q=$('q').value.toLowerCase().trim(),sz=$('size').value,b=$('bill').value,p=$('plat').value,mx=num($('max').value);
+  let r=DATA.filter(x=>x.category===cat);
+  if(q)r=r.filter(x=>(x.firm+' '+x.plan).toLowerCase().includes(q));
+  if(sz)r=r.filter(x=>String(x.size_num)===sz);
+  if(b==='one')r=r.filter(x=>/one/i.test(x.billing));
+  if(b==='month')r=r.filter(x=>/month/i.test(x.billing));
+  if(p)r=r.filter(x=>(x.platforms||'').toLowerCase().includes(p.toLowerCase()));
+  if(mx!=null)r=r.filter(x=>x.cost_to_funded_usd!=null&&x.cost_to_funded_usd<=mx);
+  if($('chile').checked)r=r.filter(x=>(x.chile_allowed||'').toLowerCase().startsWith('yes'));
+  if($('priced').checked)r=r.filter(x=>x.cost_to_funded_usd!=null);
+  if($('mine').checked)r=r.filter(x=>fav.has(x.firm));
+  const k=sortK;
+  r.sort((a,b)=>{let A=a[k],B=b[k];const nA=typeof A==='number'?A:num(A),nB=typeof B==='number'?B:num(B);
+    if(nA!=null||nB!=null){if(nA==null)return 1;if(nB==null)return -1;return (nA-nB)*sortD||((a.cost_to_funded_usd??1e9)-(b.cost_to_funded_usd??1e9))}
+    return String(A).localeCompare(String(B))*sortD});
+  return r;
+}
+function priceCell(x){
+  const l=num(x.list_price_usd),p=num(x.promo_price_usd);
+  let s=money(x.best_price_usd)||esc(x.list_price_usd);
+  if(p!=null&&l!=null&&p<l)s+=` <span class="strike">${money(l)}</span>`;
+  if(x.promo_code)s+=`<br><span class="code">${esc(x.promo_code)}</span>`;
+  if(x.est_price_usd!=null)s+=`<br><span class="est">est. ${money(x.est_price_usd)} with new offer</span>`;
+  return s;
+}
+function render(){
+  const r=rowsFor();
+  $('t').querySelector('thead').innerHTML='<tr><th></th>'+COLS.map(([h,k])=>`<th data-k="${k}" class="${k===sortK?'s'+(sortD<0?' d':''):''}">${h}</th>`).join('')+'</tr>';
+  $('t').querySelector('tbody').innerHTML=r.slice(0,600).map(x=>`<tr>
+   <td><input type="checkbox" data-id="${x.id}" ${sel.has(x.id)?'checked':''} title="Add to compare"></td>
+   <td><span data-fav="${esc(x.firm)}" style="cursor:pointer;color:${fav.has(x.firm)?'#f0c46a':'#45515e'}">★</span></td>
+   <td><b>${esc(x.firm)}</b>${watch(x.firm)}</td><td class="small">${esc(x.plan)}</td><td class="num">${x.size_num?Number(x.size_num).toLocaleString():''}</td><td class="small">${esc(x.billing)}</td>
+   <td class="num">${priceCell(x)}</td><td class="num">${money(num(x.activation_fee_usd))||esc(x.activation_fee_usd)}</td><td class="num cost">${money(x.cost_to_funded_usd)}</td>
+   <td class="small">${esc(x.reset_fee_usd)}</td><td class="num">${esc(x.max_drawdown_usd)}</td><td class="small">${esc(x.drawdown_type)}</td><td class="num">${esc(x.daily_loss_usd)}</td><td class="num">${esc(x.profit_target_usd)}</td>
+   <td class="small">${esc(x.consistency_rule)}</td><td class="small">${esc(x.profit_split)}</td><td class="small">${esc(x.platforms).replace(/;/g,', ')}</td><td>${chile(x.chile_allowed)}</td>
+   <td>${link(x.buy_url,'Buy')} ${link(x.discord_url,'Discord')}</td><td class="small">${esc(x.checked_date)}</td></tr>`).join('');
+  $('count').textContent=`${r.length} plans from ${new Set(r.map(x=>x.firm)).size} firms`+(r.length>600?' (showing first 600, narrow the filters)':'');
+  $('tray').classList.toggle('on',sel.size>0);$('trayN').textContent=`${sel.size} selected`;
+}
+function fillFilters(){
+  const r=DATA.filter(x=>x.category===cat);
+  const sizes=[...new Set(r.map(x=>x.size_num).filter(Boolean))].sort((a,b)=>a-b);
+  const cur=$('size').value;
+  $('size').innerHTML='<option value="">Any</option>'+sizes.map(s=>`<option value="${s}">${s>=1000?(s/1000)+'K':s}</option>`).join('');
+  if(sizes.map(String).includes(cur))$('size').value=cur;
+  const pc={};r.forEach(x=>(x.platforms||'').split(/[;,]/).map(s=>s.replace(/\(.*?\)/g,'').trim()).filter(s=>s&&s.length<30).forEach(s=>pc[s]=(pc[s]||0)+1));
+  const plats=Object.entries(pc).filter(([,n])=>n>=3).sort((a,b)=>b[1]-a[1]).map(([s])=>s);
+  $('plat').innerHTML='<option value="">Any</option>'+plats.map(s=>`<option>${esc(s)}</option>`).join('');
+}
+function compare(){
+  const r=DATA.filter(x=>sel.has(x.id)).sort((a,b)=>(a.cost_to_funded_usd??1e9)-(b.cost_to_funded_usd??1e9));
+  const minC=Math.min(...r.map(x=>x.cost_to_funded_usd??1e9));
+  const F=[['Plan','plan'],['Size','size_num'],['Billing','billing'],['List price','list_price_usd'],['Code','promo_code'],['Code price','promo_price_usd'],['Activation','activation_fee_usd'],['Cost to funded','cost_to_funded_usd'],['Reset','reset_fee_usd'],['Funded monthly / data fee','monthly_or_data_fee_funded_usd'],['Commission per side','commission_per_side_usd'],['Profit target','profit_target_usd'],['Max drawdown','max_drawdown_usd'],['Drawdown type','drawdown_type'],['Daily loss','daily_loss_usd'],['Consistency','consistency_rule'],['Min days','min_days'],['Profit split','profit_split'],['Payout frequency','payout_frequency'],['Payout minimum','payout_min_usd'],['Platforms','platforms'],['Instruments','instruments_note'],['Chile','chile_allowed'],['Restricted countries','restricted_countries_note'],['Prices & rules verified','checked_date'],['Notes','notes']];
+  let h='<table><tr><th></th>'+r.map(x=>`<th><b style="color:var(--text)">${esc(x.firm)}</b><br>${link(x.buy_url,'Buy')} ${link(x.discord_url,'Discord')} ${link(x.source_url,'Source')}</th>`).join('')+'</tr>';
+  h+='<tr><td>Codes last checked</td>'+r.map(x=>`<td class="small">${esc((FIRMS[x.firm]||{}).checked||'not yet')}</td>`).join('')+'</tr>';
+  h+='<tr><td>Codes on site</td>'+r.map(x=>{const w=FIRMS[x.firm]||{};return `<td>${(w.codes||[]).map(c=>`<span class="code">${esc(c)}</span>`).join(' ')||'<span class="small">none found</span>'} <span class="small">${(w.pcts||[]).map(p=>p+'%').join(' ')}</span></td>`}).join('')+'</tr>';
+  F.forEach(([l,k])=>{h+=`<tr><td>${l}</td>`+r.map(x=>{let v=x[k];if(k==='cost_to_funded_usd')return `<td class="${v===minC?'best':''}">${money(v)}</td>`;if(k==='size_num')v=v?Number(v).toLocaleString():'';if(k==='chile_allowed')return `<td>${chile(v)} <span class="small">${esc(v)}</span></td>`;if(k==='promo_code'&&v)return `<td><span class="code">${esc(v)}</span></td>`;return `<td class="small" style="max-width:none">${esc(v)}</td>`}).join('')+'</tr>'});
+  $('cmp').innerHTML=h+'</table>';$('modal').classList.add('on');
+}
+function renderChg(){const el=$('chg');if(!CHG.length){el.innerHTML='<summary>Code changes: none yet</summary><div class="small">The daily check compares each firm\'s site with the day before. Changes show here.</div>';return}
+  el.innerHTML=`<summary>Code changes (${CHG.length})</summary><ul>`+CHG.slice(0,40).map(c=>{const add=c.now_codes.filter(x=>!c.was_codes.includes(x)),gone=c.was_codes.filter(x=>!c.now_codes.includes(x));return `<li><span class="small">${c.date}</span> <b>${esc(c.firm)}</b> ${add.map(x=>`<span class="code">+${esc(x)}</span>`).join(' ')} ${gone.map(x=>`<span class="strike">${esc(x)}</span>`).join(' ')} <span class="small">${c.now_pcts.map(p=>p+'%').join(' ')}</span></li>`}).join('')+'</ul>'}
+function save(){localStorage.setItem('sel',JSON.stringify([...sel]));localStorage.setItem('fav',JSON.stringify([...fav]))}
+$('tabs').innerHTML=CATS.map(([k,l])=>`<button class="tab ${k===cat?'on':''}" data-c="${k}">${l}</button>`).join('');
+$('tabs').onclick=e=>{const c=e.target.dataset.c;if(!c)return;cat=c;document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.c===c));fillFilters();render()};
+['q','size','bill','plat','max','chile','priced','mine'].forEach(id=>$(id).addEventListener('input',render));
+$('t').onclick=e=>{const th=e.target.closest('th');if(th&&th.dataset.k&&th.dataset.k!=='fav'){const k=th.dataset.k;sortD=k===sortK?-sortD:1;sortK=k;render();return}
+  if(e.target.dataset.id){const i=+e.target.dataset.id;e.target.checked?sel.add(i):sel.delete(i);save();render();return}
+  if(e.target.dataset.fav){const f=e.target.dataset.fav;fav.has(f)?fav.delete(f):fav.add(f);save();render()}};
+$('cmpBtn').onclick=compare;$('clr').onclick=()=>{sel.clear();save();render()};
+$('close').onclick=()=>$('modal').classList.remove('on');
+fetch('data.json',{cache:'no-cache'}).then(r=>r.json()).then(d=>{DATA=d.rows;FIRMS=d.firms||{};CHG=d.changes||[];const fd=x=>{if(!x)return '—';const [dd,t]=String(x).split(' ');const dt=new Date(dd+'T12:00:00');return dt.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'})+(t?' '+t:'')};
+  $('upd').innerHTML=`<div class="stamp">Codes &amp; discounts · checked daily<b>Last: ${fd(d.watched)}</b></div><div class="stamp">Prices &amp; rules · checked weekly<b>Last: ${fd(d.updated)}${d.next_deep?' · next '+fd(d.next_deep):''}</b></div>`;renderChg();fillFilters();render()});
+</script>
+</body>
+</html>
