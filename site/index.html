@@ -54,6 +54,7 @@ tr:hover td{background:#0e0e16}
 .est{color:#ffd166;font-size:12px}
 .strike{color:#6b6b80;text-decoration:line-through;font-size:12px}
 a{color:#4fc3ff;text-decoration:none} a:hover{color:#ff4fd8}
+a.fn{color:var(--text);text-decoration:none}a.fn:hover{color:#ff4fd8}.w-my{background:#0d2a1a;color:#3ddc84;border:1px solid #1f5c38}
 a.l-buy{color:#3ddc84;font-weight:600}a.l-dc{color:#a29bff}a.l-src{color:#ff9f1c}a.l-buy:hover,a.l-dc:hover,a.l-src:hover{color:#ff4fd8}
 .lk a+a{margin-left:8px}
 .small{font-size:12px;color:var(--mut);max-width:260px;white-space:normal}
@@ -94,14 +95,14 @@ footer{color:var(--mut);font-size:11px;padding:10px 16px 100px}
 <details class="changes" id="chg"></details>
 <div class="count" id="count"></div>
 <div class="wrap"><table id="t"><thead></thead><tbody></tbody></table></div>
-<footer><b>Independent comparison, not financial advice. Prices, codes and rules change often; always confirm on the firm's own site before buying.</b> Cost to funded = best price found (code price if a code is live, else list) + activation fee. Excludes resets, extra months and data fees, so check the full row before buying. Some code prices are computed from the advertised % off; see Notes. Seed rows marked FROM SEED come from TradingLookup open data (<a href="https://tradinglookup.com/data" target="_blank" rel="noopener">tradinglookup.com/data</a>, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>). Badges: "code live" means the stored code still appears on the firm's site today; "code not seen" means it was not found (it may have expired, or the site hides codes from simple page reads); hover a badge for every code seen. "est." prices are list price minus a newly seen % off and are not checkout totals. Country status comes from each firm's published restricted-country list (TradingLookup country checks plus our own reads); "not stated" means we found no list or your country wasn't covered, so check the firm's terms.</footer>
+<footer><b>Independent comparison, not financial advice. Prices, codes and rules change often; always confirm on the firm's own site before buying.</b> Cost to funded = best price found (code price if a code is live, else list) + activation fee. Excludes resets, extra months and data fees, so check the full row before buying. Some code prices are computed from the advertised % off; see Notes. Seed rows marked FROM SEED come from TradingLookup open data (<a href="https://tradinglookup.com/data" target="_blank" rel="noopener">tradinglookup.com/data</a>, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>). Badges: "code live" means the stored code still appears on the firm's site today; "code not seen" means it was not found (it may have expired, or the site hides codes from simple page reads); hover a badge for every code seen. "est." prices are list price minus a newly seen % off and are not checkout totals. <span id="affnote" style="display:none"><b>Affiliate disclosure:</b> links marked "my link" are my affiliate links; you pay the same (codes shown are equal to or better than the firm's public one where noted) and I may earn a commission. It never changes the ranking, which is by cost only. </span>Country status comes from each firm's published restricted-country list (TradingLookup country checks plus our own reads); "not stated" means we found no list or your country wasn't covered, so check the firm's terms.</footer>
 
 <div class="tray" id="tray"><span id="trayN"></span><button id="cmpBtn">Compare side by side</button><button class="ghost" id="clr">Clear</button></div>
 <div class="modal" id="modal"><div class="box"><div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0;font-size:16px">Side by side</h2><button class="ghost" id="close">Close</button></div><div class="cmp" id="cmp"></div></div></div>
 
 <script>
 const CATS=[['futures','Futures'],['forex/CFD','Forex / CFD'],['stocks','Stocks']];
-let DATA=[],FIRMS={},CHG=[],cat='futures',sortK='cost_to_funded_usd',sortD=1;
+let AFF={},DATA=[],FIRMS={},CHG=[],cat='futures',sortK='cost_to_funded_usd',sortD=1;
 const sel=new Set(JSON.parse(localStorage.getItem('sel')||'[]'));
 const fav=new Set(JSON.parse(localStorage.getItem('fav')||'[]'));
 const $=id=>document.getElementById(id);
@@ -114,6 +115,7 @@ const chile=f=>{if(!$('ctry').value)return '<span class="small">pick country</sp
 const LC={Buy:'l-buy',Discord:'l-dc',Source:'l-src'};
 const link=(u,t)=>u&&/^https?:/.test(u)?`<a class="${LC[t]||(/^Source/.test(t)?'l-src':'')}" href="${esc(u)}" target="_blank" rel="noopener">${t}</a>`:'';
 const WS={'ok':['w-ok','code live'],'extra code':['w-ok','code live +more'],'new code':['w-new','new code on site'],'no code':['w-un','no code'],'code not seen':['w-gone','code not seen'],'unreadable':['w-un','not checked']};
+function fname(f,u){const a=AFF[f];const h=a?a.url:u;const n=esc(f);if(!h)return `<b>${n}</b>`;return `<a href="${esc(h)}" target="_blank" rel="noopener${a?' sponsored':''}" class="fn"><b>${n}</b></a>`+(a?` <span class="tag w-my" title="Jen's affiliate link: same price for you, she earns a commission">my link</span>`+(a.code?` <span class="code" title="Jen's code">${esc(a.code)}</span>`:''):'')}
 function watch(f){const w=FIRMS[f];if(!w)return '';const [c,l]=WS[w.status]||['w-un',w.status];const t=`Codes checked ${w.checked}. Codes on site: ${(w.codes||[]).join(', ')||'none found'}. % off seen: ${(w.pcts||[]).join(', ')||'none'}`;return ` <span class="tag ${c}" title="${esc(t)}">${l}</span>`}
 const COLS=[
  ['★','fav'],['Firm','firm'],['Plan','plan'],['Size','size_num'],['Billing','billing'],['Price','best_price_usd'],['Activation','activation_fee_usd'],['Cost to funded','cost_to_funded_usd'],
@@ -150,11 +152,11 @@ function render(){
   $('t').querySelector('tbody').innerHTML=r.slice(0,600).map(x=>`<tr>
    <td><input type="checkbox" data-id="${x.id}" ${sel.has(x.id)?'checked':''} title="Add to compare"></td>
    <td><span data-fav="${esc(x.firm)}" style="cursor:pointer;color:${fav.has(x.firm)?'#f0c46a':'#45515e'}">★</span></td>
-   <td><b>${esc(x.firm)}</b>${watch(x.firm)}</td><td class="small">${esc(x.plan)}</td><td class="num">${x.size_num?Number(x.size_num).toLocaleString():''}</td><td class="small">${esc(x.billing)}</td>
+   <td>${fname(x.firm,x.buy_url)}${watch(x.firm)}</td><td class="small">${esc(x.plan)}</td><td class="num">${x.size_num?Number(x.size_num).toLocaleString():''}</td><td class="small">${esc(x.billing)}</td>
    <td class="num">${priceCell(x)}</td><td class="num">${money(num(x.activation_fee_usd))||esc(x.activation_fee_usd)}</td><td class="num cost">${money(x.cost_to_funded_usd)}</td>
    <td class="small">${esc(x.reset_fee_usd)}</td><td class="num">${esc(x.max_drawdown_usd)}</td><td class="small">${esc(x.drawdown_type)}</td><td class="num">${esc(x.daily_loss_usd)}</td><td class="num">${esc(x.profit_target_usd)}</td>
    <td class="small">${esc(x.consistency_rule)}</td><td class="small">${esc(x.profit_split)}</td><td class="small">${esc(x.platforms).replace(/;/g,', ')}</td><td>${chile(x.firm)}</td>
-   <td class="lk">${link(x.buy_url,'Buy')}${link(x.discord_url,'Discord')}</td><td class="small">${esc(x.checked_date)}</td></tr>`).join('');
+   <td class="lk">${link((AFF[x.firm]||{}).url||x.buy_url,'Buy')}${link(x.discord_url,'Discord')}</td><td class="small">${esc(x.checked_date)}</td></tr>`).join('');
   $('count').textContent=`${r.length} plans from ${new Set(r.map(x=>x.firm)).size} firms`+(r.length>600?' (showing first 600, narrow the filters)':'');
   $('tray').classList.toggle('on',sel.size>0);$('trayN').textContent=`${sel.size} selected`;
 }
@@ -172,7 +174,7 @@ function compare(){
   const r=DATA.filter(x=>sel.has(x.id)).sort((a,b)=>(a.cost_to_funded_usd??1e9)-(b.cost_to_funded_usd??1e9));
   const minC=Math.min(...r.map(x=>x.cost_to_funded_usd??1e9));
   const F=[['Plan','plan'],['Size','size_num'],['Billing','billing'],['List price','list_price_usd'],['Code','promo_code'],['Code price','promo_price_usd'],['Activation','activation_fee_usd'],['Cost to funded','cost_to_funded_usd'],['Reset','reset_fee_usd'],['Funded monthly / data fee','monthly_or_data_fee_funded_usd'],['Commission per side','commission_per_side_usd'],['Profit target','profit_target_usd'],['Max drawdown','max_drawdown_usd'],['Drawdown type','drawdown_type'],['Daily loss','daily_loss_usd'],['Consistency','consistency_rule'],['Min days','min_days'],['Profit split','profit_split'],['Payout frequency','payout_frequency'],['Payout minimum','payout_min_usd'],['Platforms','platforms'],['Instruments','instruments_note'],['Your country','ctry'],['Restricted countries','restricted_countries_note'],['Prices & rules verified','checked_date'],['Notes','notes']];
-  let h='<table><tr><th></th>'+r.map(x=>`<th><b style="color:var(--text)">${esc(x.firm)}</b><br><span class="lk">${link(x.buy_url,'Buy')}${link(x.discord_url,'Discord')}${(x.sources&&x.sources.length?x.sources:[x.source_url]).map((u,j)=>link(u,j?'Source '+(j+1):'Source')).join('')}</span></th>`).join('')+'</tr>';
+  let h='<table><tr><th></th>'+r.map(x=>`<th>${fname(x.firm,x.buy_url)}<br><span class="lk">${link((AFF[x.firm]||{}).url||x.buy_url,'Buy')}${link(x.discord_url,'Discord')}${(x.sources&&x.sources.length?x.sources:[x.source_url]).map((u,j)=>link(u,j?'Source '+(j+1):'Source')).join('')}</span></th>`).join('')+'</tr>';
   h+='<tr><td>Codes last checked</td>'+r.map(x=>`<td class="small">${esc((FIRMS[x.firm]||{}).checked||'not yet')}</td>`).join('')+'</tr>';
   h+='<tr><td>Codes on site</td>'+r.map(x=>{const w=FIRMS[x.firm]||{};return `<td>${(w.codes||[]).map(c=>`<span class="code">${esc(c)}</span>`).join(' ')||'<span class="small">none found</span>'} <span class="small">${(w.pcts||[]).map(p=>p+'%').join(' ')}</span></td>`}).join('')+'</tr>';
   F.forEach(([l,k])=>{h+=`<tr><td>${l}</td>`+r.map(x=>{let v=x[k];if(k==='cost_to_funded_usd')return `<td class="${v===minC?'best':''}">${money(v)}</td>`;if(k==='size_num')v=v?Number(v).toLocaleString():'';if(k==='ctry')return `<td>${chile(x.firm)}</td>`;if(k==='promo_code'&&v)return `<td><span class="code">${esc(v)}</span></td>`;return `<td class="small" style="max-width:none">${esc(v)}</td>`}).join('')+'</tr>'});
@@ -190,7 +192,7 @@ $('t').onclick=e=>{const th=e.target.closest('th');if(th&&th.dataset.k&&th.datas
   if(e.target.dataset.fav){const f=e.target.dataset.fav;fav.has(f)?fav.delete(f):fav.add(f);save();render()}};
 $('cmpBtn').onclick=compare;$('clr').onclick=()=>{sel.clear();save();render()};
 $('close').onclick=()=>$('modal').classList.remove('on');
-fetch('data.json',{cache:'no-cache'}).then(r=>r.json()).then(d=>{DATA=d.rows;FIRMS=d.firms||{};CTRY=d.countries||CTRY;$('ctry').innerHTML='<option value="">Choose…</option>'+CTRY.list.map(([c,n])=>`<option value="${c}">${esc(n)}</option>`).join('');$('ctry').value=localStorage.getItem('ctry')||'';CHG=d.changes||[];const fd=x=>{if(!x)return '—';const [dd,t]=String(x).split(' ');const dt=new Date(dd+'T12:00:00');return dt.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'})+(t?' '+t:'')};
+fetch('data.json',{cache:'no-cache'}).then(r=>r.json()).then(d=>{DATA=d.rows;FIRMS=d.firms||{};AFF=d.aff||{};if(Object.keys(AFF).length)$('affnote').style.display='';CTRY=d.countries||CTRY;$('ctry').innerHTML='<option value="">Choose…</option>'+CTRY.list.map(([c,n])=>`<option value="${c}">${esc(n)}</option>`).join('');$('ctry').value=localStorage.getItem('ctry')||'';CHG=d.changes||[];const fd=x=>{if(!x)return '—';const [dd,t]=String(x).split(' ');const dt=new Date(dd+'T12:00:00');return dt.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'})+(t?' '+t:'')};
   $('upd').innerHTML=`<div class="stamp">Codes &amp; discounts · checked daily<b>Last: ${fd(d.watched)}</b></div><div class="stamp">Prices &amp; rules · checked weekly<b>Last: ${fd(d.updated)}${d.next_deep?' · next '+fd(d.next_deep):''}</b></div>`;renderChg();fillFilters();render()});
 </script>
 </body>

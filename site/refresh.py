@@ -143,7 +143,7 @@ def main():
             log = []
     log = (changes + log)[:500]
     json.dump(log, open(HERE / "changes.json", "w"), indent=0)
-    out = {"updated": base.get("updated"), "next_deep": base.get("next_deep"), "watched": stamp, "rows": rows, "firms": firms, "changes": log[:60], "countries": base.get("countries")}
+    out = {"updated": base.get("updated"), "next_deep": base.get("next_deep"), "watched": stamp, "rows": rows, "firms": firms, "changes": log[:60], "countries": base.get("countries"), "aff": base.get("aff") or {}}
     tmp = HERE / "data.json.tmp"
     json.dump(out, open(tmp, "w"), separators=(",", ":"))
     tmp.replace(HERE / "data.json")
