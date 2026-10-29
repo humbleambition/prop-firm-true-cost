@@ -114,7 +114,7 @@ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 let CTRY={list:[],firms:{}};
 const cst=f=>{const c=$('ctry').value;if(!c)return '';return ((CTRY.firms[f]||{})[c])||''};
 const chile=f=>{if(!$('ctry').value)return '<span class="small">pick country</span>';const v=cst(f);return v==='y'?'<span class="tag y">allowed</span>':v==='n'?'<span class="tag n">restricted</span>':'<span class="tag u">not stated</span>'};
-const BILL=b=>{b=String(b||'').toLowerCase();return /month|1er mes/.test(b)?'Monthly':/one|free/.test(b)?'One-time':'Not stated'};
+const BILL=b=>{b=String(b||'').toLowerCase();return /month|1er mes/.test(b)?'Monthly':/free/.test(b)?'Free':/one/.test(b)?'One-time':'Not stated'};
 function ddCats(t){t=String(t||'').toLowerCase().replace(/\[.*?\]/g,'');const out=new Set();
  if(!t.trim()||/^not stated/.test(t)){out.add('Not stated');return out}
  t.split(/;|\bor\b|\//).forEach(c=>{c=c.trim();if(!c)return;
@@ -143,7 +143,7 @@ function rowsFor(){
   let r=DATA.filter(x=>x.category===cat);
   if(q)r=r.filter(x=>(x.firm+' '+x.plan).toLowerCase().includes(q));
   if(sz)r=r.filter(x=>String(x.size_num)===sz);
-  if(b==='one')r=r.filter(x=>BILL(x.billing)==='One-time');
+  if(b==='one')r=r.filter(x=>['One-time','Free'].includes(BILL(x.billing)));
   if(b==='month')r=r.filter(x=>BILL(x.billing)==='Monthly');
   if(dd)r=r.filter(x=>ddCats(x.drawdown_type).has(dd));
   if(p)r=r.filter(x=>(x.platforms||'').toLowerCase().includes(p.toLowerCase()));
