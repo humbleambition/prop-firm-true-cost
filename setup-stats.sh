@@ -8,10 +8,11 @@ cd "$STACK"
 mkdir -p logs stats
 
 # 1. Password for the stats page
+[ -s "$STACK/.stats_hash" ] || rm -f "$STACK/.stats_hash"
 if [ ! -f "$STACK/.stats_hash" ]; then
   echo "Choose a password for your stats page (nothing shows while you type)."
   read -rsp 'Password: ' PW < /dev/tty; echo
-  docker compose exec -T caddy caddy hash-password --plaintext "$PW" | tr -d '\r\n' > "$STACK/.stats_hash"
+  docker compose exec -T caddy caddy hash-password --plaintext "$PW" < /dev/null | tr -d '\r\n' > "$STACK/.stats_hash"
   unset PW; chmod 600 "$STACK/.stats_hash"
 fi
 HASH=$(cat "$STACK/.stats_hash")
@@ -59,7 +60,7 @@ STACK="$HOME/striatum"; cd "$STACK" || exit 1
 for site in main props; do
   [ -s "logs/$site.log" ] || continue
   docker run --rm -v "$STACK/logs:/logs:ro" -v "$STACK/stats:/out" allinurl/goaccess \
-    /logs/$site.log --log-format=CADDY --ignore-crawlers -o /out/$site.html >/dev/null 2>&1 || true
+    /logs/$site.log --log-format=CADDY --ignore-crawlers -o /out/$site.html >/dev/null 2>&1 < /dev/null || true
 done
 cat > stats/index.html <<HTML
 <!doctype html><meta charset="utf-8"><title>StriatumOS stats</title>
@@ -74,16 +75,16 @@ LINE="0 * * * * $HOME/striatum-stats.sh"
 ( crontab -l 2>/dev/null | grep -v "striatum-stats.sh" ; echo "$LINE" ) | crontab -
 
 # 5. Apply
-docker compose up -d caddy
+docker compose up -d caddy < /dev/null
 sleep 3
-if docker compose exec -T caddy caddy validate --config /etc/caddy/Caddyfile >/dev/null 2>&1; then
-  docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile
+if docker compose exec -T caddy caddy validate --config /etc/caddy/Caddyfile >/dev/null 2>&1 < /dev/null; then
+  docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile < /dev/null
 else
   echo "Caddy config check failed; restoring backup."; cp "$(ls -t Caddyfile.bak.* | head -1)" Caddyfile
-  docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile; exit 1
+  docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile < /dev/null; exit 1
 fi
-docker pull -q allinurl/goaccess >/dev/null
-"$HOME/striatum-stats.sh"
+docker pull -q allinurl/goaccess >/dev/null < /dev/null
+"$HOME/striatum-stats.sh" < /dev/null
 echo
 echo "Done. Visits are now logged. Stats (user jen + your password), refreshed hourly:"
 echo "  https://props.$(grep '^DOMAIN=' .env | cut -d= -f2)/stats/"
