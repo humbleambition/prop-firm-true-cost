@@ -19,7 +19,8 @@ add='''	@rules_journal {
 	}
 	header @rules_local Access-Control-Allow-Origin "http://localhost:5173"
 	header /rules.json Vary Origin
-	header /rules.json Cache-Control "no-cache"'''.split('\n')
+	header /rules.json Cache-Control "no-cache"
+	header /rules.json Access-Control-Expose-Headers ETag'''.split('\n')
 done=False
 for ln in lines:
     out.append(ln)

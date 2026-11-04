@@ -166,7 +166,9 @@ def build():
                 daily = round(size * float(m.group(1)) / 100)
         mi, ma = commissions(r.get('commission_per_side_usd'))
         cr = s(r.get('consistency_rule')).lower()
-        basis = 'best_day/profit_target' if 'target' in cr else ('best_day/total_profit' if any(v for v in cons.values()) else None)
+        # basis: profit_target only when the rule measures against the target, not total profit
+        tgt = re.search(r'of (?:the |your )?(?:total )?(?:profit )?target', cr) and not re.search(r'of (?:total |net |total net )?profits?\b(?! target)', cr)
+        basis = 'best_day/profit_target' if tgt else ('best_day/total_profit' if any(v for v in cons.values()) else None)
         mpl = None
         m = re.search(r'max(?:imum)? position loss[^\d]{0,12}(\d+(?:\.\d+)?)\s*%', dl.lower() + ' ' + s(r.get('notes')).lower())
         mpl = float(m.group(1)) if m else None
