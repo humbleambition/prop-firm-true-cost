@@ -18,6 +18,11 @@ add='''	@rules_journal {
 		header Origin http://localhost:5173
 	}
 	header @rules_local Access-Control-Allow-Origin "http://localhost:5173"
+	@rules_omniview {
+		path /rules.json
+		header Origin https://omniview.striatumos.consulting
+	}
+	header @rules_omniview Access-Control-Allow-Origin "https://omniview.striatumos.consulting"
 	header /rules.json Vary Origin
 	header /rules.json Cache-Control "no-cache"
 	header /rules.json Access-Control-Expose-Headers ETag'''.split('\n')
