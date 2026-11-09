@@ -1,0 +1,82 @@
+/* StriatumOS house theme for Prop Firm True Cost. Loaded last in index.html.
+   Aligns the page's own tokens and fixed colours to striatumos.consulting (2026-11-09).
+   The 7-colour neon rainbow becomes the logo's 6 hues; layout is untouched. */
+
+:root {
+  --bg: #0E1014;
+  --panel: #171A20;
+  --line: #2A2F38;
+  --text: #E8EAED;
+  --mut: #A0A6B0;
+  --acc: #1FA34A;
+  --blue: #5B82F5;
+  --st-heading: #F3F4F6;
+  --st-field: #3A404B;
+  --st-ink: #0E1014;
+  --st-row: #13161B;     /* zebra row, halfway between page and card */
+  --st-hover: #1E222A;
+  --st-red: #F04A47;
+  --st-orange: #E3710D;
+  --st-yellow: #F2D00D;
+  --st-green: #1FA34A;
+  --st-blue: #5B82F5;
+  --st-violet: #C455DE;
+  --rb: linear-gradient(90deg, var(--st-red), var(--st-orange), var(--st-yellow), var(--st-green), var(--st-blue), var(--st-violet));
+  color-scheme: dark;
+}
+
+/* Header stamps and market tabs */
+.stamp { background: var(--panel); }
+.stamp b { color: var(--st-heading); }
+.stamp:nth-child(1) { border-color: rgb(91 130 245 / 0.4); }
+.stamp:nth-child(2) { border-color: rgb(227 113 13 / 0.4); }
+.tab { background: var(--panel); }
+.tab:nth-child(1).on { background: linear-gradient(90deg, var(--st-red), var(--st-orange)); }
+.tab:nth-child(2).on { background: linear-gradient(90deg, var(--st-green), var(--st-blue)); }
+.tab:nth-child(3).on { background: linear-gradient(90deg, var(--st-blue), var(--st-violet)); }
+.tab.on { color: var(--st-ink); }
+
+/* Filters and form controls */
+.filters { background: rgb(23 26 32 / 0.92); }
+select, input[type=text], input[type=number] { background: var(--bg); border-color: var(--st-field); }
+select:focus, input:focus { border-color: var(--st-blue); box-shadow: 0 0 0 2px rgb(91 130 245 / 0.35); }
+input[type=checkbox] { accent-color: var(--st-violet); }
+button { color: var(--st-ink); }
+button.ghost { border-color: var(--st-field); color: var(--text); }
+
+/* Table */
+th { background: var(--bg); }
+th.s { color: var(--st-heading); }
+#t tbody tr:nth-child(even) td { background: var(--st-row); }
+#t tbody tr:hover td, tr:hover td { background: var(--st-hover); }
+td.cost { color: var(--st-green); text-shadow: 0 0 12px rgb(31 163 74 / 0.3); }
+.best { color: var(--st-green); }
+/* Row colour edge: cycle the 6 logo hues */
+tbody tr:nth-child(6n+1) td:nth-child(3) { border-left-color: var(--st-red); }
+tbody tr:nth-child(6n+2) td:nth-child(3) { border-left-color: var(--st-orange); }
+tbody tr:nth-child(6n+3) td:nth-child(3) { border-left-color: var(--st-yellow); }
+tbody tr:nth-child(6n+4) td:nth-child(3) { border-left-color: var(--st-green); }
+tbody tr:nth-child(6n+5) td:nth-child(3) { border-left-color: var(--st-blue); }
+tbody tr:nth-child(6n) td:nth-child(3) { border-left-color: var(--st-violet); }
+/* Struck list price was #6b6b80 (3.8:1); muted grey reaches 7:1 */
+.strike { color: var(--mut); }
+
+/* Links */
+a { color: var(--st-blue); }
+a:hover, a.fn:hover, a.l-faq:hover, a.l-buy:hover, a.l-dc:hover, a.l-src:hover { color: var(--st-violet); }
+a.l-buy { color: var(--st-green); }
+a.l-faq { color: var(--st-blue); }
+a.l-dc { color: var(--st-violet); }
+a.l-src { color: var(--st-orange); }
+
+/* Change log, compare tray and modal */
+.changes { background: var(--panel); }
+.tray { background: rgb(23 26 32 / 0.96); }
+.modal { background: rgb(14 16 20 / 0.88); }
+.box { background: var(--bg); box-shadow: 0 0 40px rgb(196 85 222 / 0.18); }
+.cmp th:first-child, .cmp td:first-child { background: var(--panel); }
+
+/* Colours the script writes inline: the credit box border and the shortlist star */
+.credit { border-color: var(--line) !important; }
+[data-fav][style*="#45515e"] { color: #6B7380 !important; }   /* 3:1+ for an icon */
+[data-fav][style*="#f0c46a"] { color: var(--st-yellow) !important; }
